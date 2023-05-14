@@ -1,0 +1,11 @@
+{
+    "win": {
+        "yt-dlp": "lib/yt-dlp/win.exe"
+    },
+    "Darwin": {
+        "yt-dlp": "lib/yt-dlp/macos"
+    },
+    "linux": {
+        "yt-dlp": "lib/yt-dlp/linux"
+    }
+}

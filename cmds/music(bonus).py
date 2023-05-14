@@ -2,6 +2,10 @@ import discord
 from discord.ext import commands
 import os
 from core import Cog_Extension
+import platform
+
+platform_lib = platform.system()
+print(platform_lib)
 
 class Music(Cog_Extension):
         
@@ -24,7 +28,6 @@ class Music(Cog_Extension):
 
         os.system(f"yt-dlp_x86.exe --extract-audio --audio-format mp3 --audio-quality 0 {url}")
         voice = discord.utils.get(self.bot.voice_clients, guild=ctx.guild)
-
         if voice is None:
             voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='General')
             await voiceChannel.connect(timeout = 600.0)

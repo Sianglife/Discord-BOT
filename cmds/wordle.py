@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import json 
 from core import Cog_Extension
-import urllib
+import requests
 import random
 
 
@@ -10,25 +10,17 @@ import random
 class Wordle(Cog_Extension):
     # Initialization 
     def __init__(self, bot):
-        pass 
-        
-        '''
-        TODO 
-        要在init function 中載入單字庫
-
-        Hint:
-        1. 好像有import urllib
-        2. data.json中有貼上url了
-        '''
+        with open('data.json', 'r', encoding='utf8') as f:
+            base_url = json.load(f)['wordleURL']
+        r = requests.get(base_url)
+        self.words = r.text.split('\n')
+        # print(self.wordle)
+        self.bot = bot
 
     @commands.command()
     async def Play(self, ctx):
-        pass
-
-        '''
-        TODO 
-        要在爬好的單字庫中, 隨機挑選一個單字做為預設的答案
-        '''
+        self.answer = random.choice(self.words) # choose a word from list "words"
+        
     
 
     
@@ -49,5 +41,5 @@ class Wordle(Cog_Extension):
         
 
 
-def setup(bot):
-    bot.add_cog(Wordle(bot))
+async def setup(bot):
+    await bot.add_cog(Wordle(bot))
