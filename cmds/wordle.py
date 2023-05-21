@@ -6,7 +6,7 @@ import random
 from models.customReply import GenReply
 
 startReply = GenReply({
-    "OK": ['''''']
+    "OK": ['開始吧！']
 })
 
 class Wordle(Cog_Extension):
@@ -21,7 +21,7 @@ class Wordle(Cog_Extension):
     @commands.command()
     async def Play(self, ctx):
         self.answer = random.choice(self.words) # choose a word from list "words"
-        ctx.send('開始吧！')
+        await ctx.send(startReply.generateReply("OK", msgs=["{$reply}", "你有五次機會猜出一個單字！使用```!Ask```猜出答案，GoodLuck@@"]))
         
     
 
