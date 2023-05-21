@@ -1,11 +1,13 @@
-import discord
 from discord.ext import commands
 import json 
 from core import Cog_Extension
 import requests
 import random
+from models.customReply import GenReply
 
-
+startReply = GenReply({
+    "OK": ['''''']
+})
 
 class Wordle(Cog_Extension):
     # Initialization 
@@ -14,12 +16,12 @@ class Wordle(Cog_Extension):
             base_url = json.load(f)['wordleURL']
         r = requests.get(base_url)
         self.words = r.text.split('\n')
-        # print(self.wordle)
         self.bot = bot
 
     @commands.command()
     async def Play(self, ctx):
         self.answer = random.choice(self.words) # choose a word from list "words"
+        ctx.send('開始吧！')
         
     
 
