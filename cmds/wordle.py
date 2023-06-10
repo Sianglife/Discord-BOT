@@ -12,8 +12,8 @@ startReply = GenReply({
 class Wordle(Cog_Extension):
     # Initialization 
     def __init__(self, bot):
-        with open('data.json', 'r', encoding='utf8') as f:
-            base_url = json.load(f)['wordleURL']
+        with open('url.json', 'r', encoding='utf8') as f:
+            base_url = json.load(f)['wordle']
         r = requests.get(base_url)
         self.words = r.text.split('\n')
         self.bot = bot

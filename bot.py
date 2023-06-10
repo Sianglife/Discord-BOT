@@ -4,17 +4,15 @@ from discord.ext import commands
 import os  
 from dotenv import load_dotenv
 
-# Set bots 
+# Set bots
 load_dotenv()
 bot = commands.Bot(command_prefix ="!", intents = discord.Intents.all()) 
-
 
 @bot.event
 async def on_ready():
     for FileName in os.listdir('./cmds'):
         if FileName.endswith('.py'):
             await bot.load_extension(f'cmds.{FileName[:-3]}')
-
     print(">>Bot is Online<<")
 
 @bot.command()
