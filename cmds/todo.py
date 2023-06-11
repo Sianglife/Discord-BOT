@@ -8,7 +8,7 @@ TODO_channelID = int(json.load(open("channel_id.json", "r", encoding="utf8"))["t
 class TodoList(Cog_Extension):
     # Initialization
     def __init__(self, bot):
-        self.todo = []
+        self.todo = list()
 
     # todo
     # Add todolist
