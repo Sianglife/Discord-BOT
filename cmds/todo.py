@@ -31,15 +31,16 @@ class TodoList(Cog_Extension):
             pass
         else:
             # TODO 單次輸入
-            print(item)
-            self.todo.append(item)
+            try:
+                self.todo.pop(self.todo.index(item))
+            except ValueError:
+                await ctx.send(f"沒有這個待辨事項 {item}")
             await ctx.send(f"已新增待辨事項 {item}")
 
     # Sort todolist
     @commands.command()
     async def Tout(self, ctx):
         # TODO Embed
-        print(self.todo)
         responseText = listToStr(self.todo, "\n")
         await ctx.send(responseText if responseText != "" else "清單沒有東西歐")
 
@@ -47,7 +48,6 @@ class TodoList(Cog_Extension):
     @commands.command()
     async def Tclr(self, ctx):
         self.todo.clear()
-        # TODO
         await ctx.send("已清除所有待辨事項")
 
 
