@@ -23,7 +23,7 @@ class Schudule(Cog_Extension):
         if d != dict() and item != "":
             d.pop(item)
         channel = self.bot.get_channel(Schedule_channelID)
-        await channel.send(f"提醒: {msg}")
+        await channel.send(f"行程: {msg}")
 
     # schedule
     @commands.command()
