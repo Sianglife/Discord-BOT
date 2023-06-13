@@ -1,4 +1,3 @@
-from datetime import datetime
 def listToStr(l: list, sep: str = " "):
     output = str()
     for i in l:
