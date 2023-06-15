@@ -42,8 +42,10 @@ class TimeManagement(Cog_Extension):
     # stop task
     @commands.command()
     async def tasks(self, ctx):
-        
-        await ctx.send(f"目前行程: {dictToStr(self.task, sep2=': ', start='```', end='```')}")
+        outputs = dict()
+        for item in self.task:
+            outputs[item] = f"{self.task[item][0].strftime('%Y/%m/%d %H:%M:%S')}, 剩餘時間: {(self.task[item][0] - datetime.now()).seconds} 秒"
+        await ctx.send(f"目前行程: {dictToStr(outputs, sep2=': ', start='```', end='```')}")
     
 
 

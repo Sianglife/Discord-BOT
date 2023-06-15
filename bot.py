@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 # Set bots
 load_dotenv()
-bot = commands.Bot(command_prefix ="!", intents = discord.Intents.all()) 
+bot = commands.Bot(command_prefix ="!", intents = discord.Intents.all(), type = 8) 
 
 @bot.event
 async def on_ready():

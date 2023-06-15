@@ -5,11 +5,35 @@ import json
 from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.base import ConflictingIdError
+import discord
+
 
 channel_ID = dict()
 channel_ID["todo"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["todo"]["id"])
 channel_ID["schedule"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["schedule"]["id"])
 channel_ID["reminder"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["reminder"]["id"])
+
+class sendUI(discord.ui.View):
+    def __init__(self,ctx,  subself: str = "", inputPlaceholder: str = ""):
+        super().__init__()
+        self.subself = subself
+        self.ctx = ctx
+        TextInput = discord.ui.TextInput(label="todoInput", placeholder=inputPlaceholder, min_length=1, max_length=100)
+        self.add_item(TextInput)
+            
+        
+    @discord.ui.button(label="確定", style=discord.ButtonStyle.green)
+    async def add(self, button: discord.ui.Button, interaction: discord.Interaction):
+        print(2,interaction)
+
+    @discord.ui.button(label="取消", style=discord.ButtonStyle.red)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        pass
+
+
+
+
+        
 
 class Arrangement(Cog_Extension):
     # Initialization
@@ -129,9 +153,11 @@ class Arrangement(Cog_Extension):
     # todolist
     # Add todolist
     @commands.command()
-    async def Tadd(self, ctx, item: str = ""):
+    async def todo(self, ctx, item: str = ""):
         if item == "":
             # TODO 詢問式的輸入
+            # view = sendUI(ctx, self, "請輸入待辨事項")
+            # await ctx.send(view=view)
             pass
         else:
             # TODO 單次輸入
