@@ -6,7 +6,6 @@ import json
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.base import ConflictingIdError
 
-Schedule_channelID = int(json.load(open("channel_id.json", "r", encoding="utf8"))["schedule"]["id"])
 
 
 class Schudule(Cog_Extension):
@@ -19,11 +18,11 @@ class Schudule(Cog_Extension):
         self.scheduler.start()
 
     # notify on schedule
-    async def notify(self, msg, d: dict=dict(), item: str = ""):
+    async def notify(self, msg, d: dict=dict(), item: str = "", channel: str = "", title: str = "提醒"):
         if d != dict() and item != "":
             d.pop(item)
-        channel = self.bot.get_channel(Schedule_channelID)
-        await channel.send(f"行程: {msg}")
+        channel = self.bot.get_channel(channel)
+        await channel.send(f"{title}: {msg}")
 
     # schedule
     @commands.command()
@@ -33,7 +32,7 @@ class Schudule(Cog_Extension):
             pass
         else:
             # TODO 單次輸入
-            self.schedule_data[item] = time
+            self.schedule_data[item] = [time]
             l = time.split(":")
             if(len(l) == 2):
                 l.append("00")
