@@ -13,24 +13,18 @@ channel_ID["todo"] = int(json.load(open("channel_id.json", "r", encoding="utf8")
 channel_ID["schedule"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["schedule"]["id"])
 channel_ID["reminder"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["reminder"]["id"])
 
-class sendUI(discord.ui.View):
-    def __init__(self,ctx,  subself: str = "", inputPlaceholder: str = ""):
-        super().__init__()
-        self.subself = subself
-        self.ctx = ctx
-        TextInput = discord.ui.TextInput(label="todoInput", placeholder=inputPlaceholder, min_length=1, max_length=100)
-        self.add_item(TextInput)
+# class sendUI(discord.ui.View):
+#     def __init__(self,ctx,  subself: str = "", inputPlaceholder: str = ""):
+#         super().__init__()
+#         self.subself = subself
+#         self.ctx = ctx
+#         TextInput = discord.ui.TextInput(label="todoInput", placeholder=inputPlaceholder, min_length=1, max_length=100)
+#         self.add_item(TextInput)
+
+#         async def callback(self, interaction: discord.Interaction):
+#             await interaction.response.send_message(f"你輸入了 {self.values[0]}")
+#             await self.ctx.send(f"你輸入了 {self.values[0]}")
             
-        
-    @discord.ui.button(label="確定", style=discord.ButtonStyle.green)
-    async def add(self, button: discord.ui.Button, interaction: discord.Interaction):
-        print(2,interaction)
-
-    @discord.ui.button(label="取消", style=discord.ButtonStyle.red)
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
-        pass
-
-
 
 
         
@@ -40,7 +34,7 @@ class Arrangement(Cog_Extension):
     def __init__(self, bot):
         self.bot = bot
         
-        self.todo = list() 
+        self.todo = ['1','2','3']#list() 
         self.remind_data = dict() # [string ,days, hour, minute, second]
         self.reminder = AsyncIOScheduler(timezone="Asia/Taipei") 
 
@@ -156,18 +150,18 @@ class Arrangement(Cog_Extension):
     async def todo(self, ctx, item: str = ""):
         if item == "":
             # TODO 詢問式的輸入
-            # view = sendUI(ctx, self, "請輸入待辨事項")
-            # await ctx.send(view=view)
-            pass
-        else:
-            # TODO 單次輸入
-            print(item)
-            self.todo.append(item)
-            await ctx.send(f"已新增待辨事項 {item}")
+            msg = await ctx.send("請輸入待辨事項")
+            message = await ctx.fetch_message(msg.id)
+            item = await self.bot.wait_for('message')
+            item = item.content
+            await message.edit(content=f"新增待辨事項{item}:")
+        # 單次輸入
+        self.todo.append(item)
+        await ctx.send(f"已新增待辨事項 {item}")
 
     # Remove todolist
     @commands.command()
-    async def Trm(self, ctx, item: str = ""):
+    async def todorm(self, ctx, item: str = ""):
         if item == "":
             # TODO 詢問式的輸入
             pass
@@ -176,21 +170,49 @@ class Arrangement(Cog_Extension):
             try:
                 self.todo.pop(self.todo.index(item))
             except ValueError:
-                await ctx.send(f"沒有這個待辨事項 {item}")
-            await ctx.send(f"已新增待辨事項 {item}")
+                embed=discord.Embed(title="清單沒有這項東西!", description=
+                    """
+                    從清單找不到你要刪的!加些東西再問一次吧~
+                    **試試看:**
+                    ```!todolist  -->  列出所有代辦事項```
+                    """, color=0xff9500)
+            await ctx.send(embed=embed)
 
     # List todolist
     @commands.command()
-    async def Tout(self, ctx):
+    async def todolist(self, ctx):
         # TODO Embed
         responseText = listToStr(self.todo, "\n")
-        await ctx.send(responseText if responseText != "" else "清單沒有東西歐")
+        if len(self.todo) == 0:
+            embed=discord.Embed(title="清單沒有東西", description=
+                """
+                清單空無一物!確認好再問一次吧~
+                **試試看:**
+                ```!todolist  -->  列出所有待辨事項```
+                """, color=0xff9500)
+        else:
+            embed=discord.Embed(title="待辨事項", description=f"```\n{responseText}```", color=0x00ff6e)
+        await ctx.send(embed=embed)
 
     # Clear todolist
     @commands.command()
-    async def Tclr(self, ctx):
+    async def todoclear(self, ctx):
         self.todo.clear()
-        await ctx.send("已清除所有待辨事項")
+        embed=discord.Embed(title="清空，乾乾淨淨~", description=
+            """
+            那些事項，一去不復返
+            """, color=0x00ff6e)
+        await ctx.send(embed=embed)
+
+    # search todolist
+    @commands.command()
+    async def todosearch(self, ctx, item: str = ""):
+        if item == "":
+            # TODO 詢問式的輸入
+            pass
+        else:
+            # TODO 單次輸入
+            pass
 
 async def setup(bot):
     await bot.add_cog(Arrangement(bot))
