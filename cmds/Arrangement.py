@@ -6,7 +6,6 @@ from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.base import ConflictingIdError
 import discord
-from discord import SelectOption
 
 channel_ID = dict()
 channel_ID["todo"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["todo"]["id"])
@@ -14,18 +13,25 @@ channel_ID["schedule"] = int(json.load(open("channel_id.json", "r", encoding="ut
 channel_ID["reminder"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["reminder"]["id"])
 
 class ReminderSelectTime(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+
     @discord.ui.select(
-        placeholder="日"
+        placeholder="日",
         min_values=1,
-        max_values=9999999999999,
-        options=[
-            discord.SelectOption(
-                label=str(i),
-            ) 
-            for i in range(1, 32)
-        ]
+        max_values=1,
+        options=[discord.SelectOption(label=str(i)) for i in range(1, 12)]
     )
-        
+    async def callback(self, select, interaction):
+        print(select)
+        await interaction.response.defer()
+
+    @discord.ui.TextInput(
+        placeholder="時",
+        style=discord.InputTextStyle.long,
+    )
+    async def callback(self, select, interaction):
+        print()      
 
 class Arrangement(Cog_Extension):
     # Initialization
@@ -172,7 +178,8 @@ class Arrangement(Cog_Extension):
     async def todorm(self, ctx, item: str = ""):
         if item == "":
             # TODO 詢問式的輸入
-            pass
+            view = ReminderSelectTime()
+            await ctx.send("請選擇要刪除的待辨事項", view=view)
         else:
             # TODO 單次輸入
             try:
