@@ -6,27 +6,25 @@ from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.base import ConflictingIdError
 import discord
-
+from discord import SelectOption
 
 channel_ID = dict()
 channel_ID["todo"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["todo"]["id"])
 channel_ID["schedule"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["schedule"]["id"])
 channel_ID["reminder"] = int(json.load(open("channel_id.json", "r", encoding="utf8"))["reminder"]["id"])
 
-# class sendUI(discord.ui.View):
-#     def __init__(self,ctx,  subself: str = "", inputPlaceholder: str = ""):
-#         super().__init__()
-#         self.subself = subself
-#         self.ctx = ctx
-#         TextInput = discord.ui.TextInput(label="todoInput", placeholder=inputPlaceholder, min_length=1, max_length=100)
-#         self.add_item(TextInput)
-
-#         async def callback(self, interaction: discord.Interaction):
-#             await interaction.response.send_message(f"你輸入了 {self.values[0]}")
-#             await self.ctx.send(f"你輸入了 {self.values[0]}")
-            
-
-
+class ReminderSelectTime(discord.ui.View):
+    @discord.ui.select(
+        placeholder="日"
+        min_values=1,
+        max_values=9999999999999,
+        options=[
+            discord.SelectOption(
+                label=str(i),
+            ) 
+            for i in range(1, 32)
+        ]
+    )
         
 
 class Arrangement(Cog_Extension):
@@ -108,13 +106,20 @@ class Arrangement(Cog_Extension):
     async def Radd(self, ctx, item: str = "", day: int = 0, hour: int = 0, minute: int = 0, second: int = 0):
         if item == "" or (day == 0 and hour == 0 and minute == 0 and second == 0):
             # TODO 詢問式的輸入
-            pass
-        else:
+            msg = await ctx.send("請輸入提醒事項:")
+            message = await ctx.fetch_message(msg.id)
+            item = await self.bot.wait_for('message')
+            item = item.content
+            await message.edit(content=f"新增待辨事項{item}:")
+            await ctx.send("請輸入提醒時間:")
+        else:            
             # 單次輸入
-            self.remind_data[item] = [f"{day}天{hour}小時{minute}分鐘{second}秒", day, hour, minute, second]
-            print(self.remind_data)
-            self.reminder.add_job(self.notify, "interval", days=day, hours=hour, minutes=minute, seconds=second, args=[item, self.remind_data, item, channel_ID["reminder"]], misfire_grace_time=60, id=item)
-            await ctx.send(f"已新增行程 {item}")
+            pass
+        self.reminder.add_job(self.notify, "interval", days=day, hours=hour, minutes=minute, seconds=second, args=[item, self.remind_data, item, channel_ID["reminder"]], misfire_grace_time=60, id=item)
+        self.remind_data[item] = [f"{day}天{hour}小時{minute}分鐘{second}秒", day, hour, minute, second]
+        embed = discord.Embed(title="已新增待辨事項", description=
+            f"加入了`{item}`\n再過`{day}天{hour}小時{minute}分鐘{second}秒`會提醒你", color=0xff9500)
+        await ctx.send(embed=embed)
 
     # Remove reminder
     @commands.command()
@@ -133,16 +138,17 @@ class Arrangement(Cog_Extension):
 
     # List reminder
     @commands.command()
-    async def Rout(self, ctx):
+    async def remindlist(self, ctx):
         # TODO Embed
         responseText = dictToStr(self.remind_data, "\n", ": ", "", "", 0)
         await ctx.send(responseText if responseText else "清單沒有東西歐")
 
     # Clear reminder
     @commands.command()
-    async def Rclr(self, ctx):
+    async def remindclear(self, ctx):
         self.remind_data.clear()
-        await ctx.send("已清除所有待辨事項")
+        embed = discord.Embed(title="已清除所有提醒", description="提醒清單已清空", color=0xff9500)
+        await ctx.send(embed=embed)
 
     # todolist
     # Add todolist
@@ -157,7 +163,9 @@ class Arrangement(Cog_Extension):
             await message.edit(content=f"新增待辨事項{item}:")
         # 單次輸入
         self.todo.append(item)
-        await ctx.send(f"已新增待辨事項 {item}")
+        embed = discord.Embed(title="已新增待辨事項", description=
+            f"加入了`{item}`", color=0xff9500)
+        await ctx.send(embed=embed)
 
     # Remove todolist
     @commands.command()
@@ -169,13 +177,15 @@ class Arrangement(Cog_Extension):
             # TODO 單次輸入
             try:
                 self.todo.pop(self.todo.index(item))
+                embed = discord.Embed(title="已刪除待辨事項", description=
+                    f"掰嗶~ `{item}`", color=0xff9500)
             except ValueError:
                 embed=discord.Embed(title="清單沒有這項東西!", description=
                     """
                     從清單找不到你要刪的!加些東西再問一次吧~
                     **試試看:**
                     ```!todolist  -->  列出所有代辦事項```
-                    """, color=0xff9500)
+                    """, color=0xff0000)
             await ctx.send(embed=embed)
 
     # List todolist
