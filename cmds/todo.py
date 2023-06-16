@@ -2,13 +2,10 @@ from discord.ext import commands
 from models.iolib import *
 from core import Cog_Extension
 import json
-from datetime import datetime
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.jobstores.base import ConflictingIdError
 import discord
 
 with open("channel_id.json", "r", encoding="utf8") as f:
-    channel_ID = json.load(f)["todo"]
+    channel_ID = int(json.load(f)["todo"]["id"])
 
 
 class todo(Cog_Extension):
@@ -16,16 +13,41 @@ class todo(Cog_Extension):
     def __init__(self, bot):
         self.bot = bot
         
-        self.todo_data = ['1','2','3']
+        self.todo_data = []
 
-    # notify on channel
-    async def notify(self, msg, d: dict=dict(), item: str = "", channel: str = "", title: str = "提醒"):
-        if d != dict() and item != "":
-            d.pop(item)
-        channel = self.bot.get_channel(channel)
-        await channel.send(f"{title}: {msg}")
+    ### todolist
+    ## all command
+    @commands.command()
+    async def todo(self, ctx):
+        view = discord.ui.View()
 
-   ### todolist
+        button = discord.ui.Button(
+            style=discord.ButtonStyle.primary,
+            label="新增待辦事項",
+            custom_id="todoadd",
+        )
+        button.callback = self.todoadd_button_callback
+        view.add_item(button)
+
+        button = discord.ui.Button(
+            style=discord.ButtonStyle.danger,
+            label="刪除待辦事項",
+            custom_id="todorm",
+        )
+        button.callback = self.todorm_button_callback
+        view.add_item(button)
+
+        button = discord.ui.Button(
+            style=discord.ButtonStyle.secondary,
+            label="查看所有待辦事項",
+            custom_id="todolist",
+        )
+        button.callback = self.todolist_button_callback
+        view.add_item(button)
+
+        await ctx.send(view=view)
+        
+
     ## Add item
     async def add_item(self, item):
         self.todo_data.append(item)
@@ -36,7 +58,7 @@ class todo(Cog_Extension):
         )
         return embed
     
-    async def todo_button_callback(self, interaction: discord.Interaction):
+    async def todoadd_button_callback(self, interaction: discord.Interaction):
         self.modal = discord.ui.Modal(title="新增代辦事項")
         self.modal.add_item(
             discord.ui.TextInput(
@@ -44,25 +66,25 @@ class todo(Cog_Extension):
                 style=discord.TextStyle.long
             ),
         )
-        self.modal.on_submit = self.todo_modal_callback
+        self.modal.on_submit = self.todoadd_modal_callback
         await interaction.response.send_modal(self.modal)
         
-    async def todo_modal_callback(self, interaction: discord.Interaction):
+    async def todoadd_modal_callback(self, interaction: discord.Interaction):
         self.modal.stop()
         item = interaction.data["components"][0]["components"][0]["value"]
         embed = await self.add_item(item)
         await interaction.response.edit_message(embed=embed, view=None)
 
     @commands.command()
-    async def todo(self, ctx, item: str = ""):
+    async def todoadd(self, ctx, item: str = ""):
         if item == "":
             # 詢問式輸入
             button = discord.ui.Button(
                 style=discord.ButtonStyle.primary,
                 label="點擊新增待辦事項",
-                custom_id="todo",
+                custom_id="todoadd",
             )
-            button.callback = self.todo_button_callback
+            button.callback = self.todoadd_button_callback
             view = discord.ui.View()
             view.add_item(button)
             await ctx.send(view=view)
@@ -73,47 +95,74 @@ class todo(Cog_Extension):
 
     ## remove item
     async def todorm_button_callback(self, interaction: discord.Interaction):
-        print(interaction.data)
-        # await interaction.response.send_modal(self.modal)
+        if len(self.todo_data) == 0:
+            embed=discord.Embed(
+                title="清單沒有東西",
+                description="清單空無一物!確認好再問一次吧~",
+                color=0xff9500,
+            )
+            await interaction.response.edit_message(embed=embed, view=None)
+            return
+        select = discord.ui.Select(
+            custom_id="todorm",
+            placeholder="請選擇",
+            options=[discord.SelectOption(label=i, value=i) for i in self.todo_data]
+        )
+        select.callback = self.todorm_select_callback
+        view = discord.ui.View()
+        view.add_item(select)
+        await interaction.response.edit_message(view=view)
+
+    async def todorm_select_callback(self, interaction: discord.Interaction):
+        item = interaction.data["values"][0]
+        self.todo_data.pop(self.todo_data.index(item))
+        embed = discord.Embed(title="已刪除待辨事項", description=
+            f"掰嗶~ ```{item}```", color=0xff9500)
+        await interaction.response.edit_message(embed=embed, view=None)
 
     @commands.command()
-    async def todorm(self, ctx, item: str = ""):
-        if item == "":
-            # 詢問式輸入
-            button = discord.ui.Select(
-                custom_id="todorm",
-                options=[discord.SelectOption(label=i, value=i) for i in self.todo_data]
+    async def todorm(self, ctx):
+        if len(self.todo_data) == 0:
+            embed=discord.Embed(
+                title="清單沒有東西",
+                description="清單空無一物!確認好再問一次吧~",
             )
-            button.callback = self.todo_button_callback
-            view = discord.ui.View()
-            view.add_item(button)
-            await ctx.send(view=view)
-        else:
-            # TODO 單次輸入
-            try:
-                self.todo_data.pop(self.todo_data.index(item))
-                embed = discord.Embed(title="已刪除待辨事項", description=
-                    f"掰嗶~ `{item}`", color=0xff9500)
-            except ValueError:
-                embed=discord.Embed(title="清單沒有這項東西!", description=
-                    """
-                    從清單找不到你要刪的!加些東西再問一次吧~
-                    **試試看:**
-                    ```!todolist  -->  列出所有代辦事項```
-                    """, color=0xff0000)
             await ctx.send(embed=embed)
+            return
+        select = discord.ui.Select(
+            custom_id="todorm",
+            placeholder="請選擇",
+            options=[discord.SelectOption(label=i, value=i) for i in self.todo_data]
+        )
+        select.callback = self.todorm_select_callback
+        view = discord.ui.View()
+        view.add_item(select)
+        await ctx.send(view=view)
 
     # List todolist
-    @commands.command()
-    async def todolist(self, ctx):
-        # TODO Embed
-        responseText = listToStr(self.todo_data, "\n")
+    async def todolist_button_callback(self, interaction: discord.Interaction):
+        responseText = "\n".join(self.todo_data)
         if len(self.todo_data) == 0:
             embed=discord.Embed(title="清單沒有東西", description=
                 """
                 清單空無一物!確認好再問一次吧~
                 **試試看:**
-                ```!todolist  -->  列出所有待辨事項```
+                ```!todoadd  -->  新增代辦事項```
+                """, color=0xff9500)
+        else:
+            embed=discord.Embed(title="待辨事項", description=f"```\n{responseText}```", color=0x00ff6e)
+        await interaction.response.edit_message(embed=embed, view=None)
+
+    @commands.command()
+    async def todolist(self, ctx):
+        # TODO Embed
+        responseText = "\n".join(self.todo_data)
+        if len(self.todo_data) == 0:
+            embed=discord.Embed(title="清單沒有東西", description=
+                """
+                清單空無一物!確認好再問一次吧~
+                **試試看:**
+                ```!todoadd  -->  新增代辦事項```
                 """, color=0xff9500)
         else:
             embed=discord.Embed(title="待辨事項", description=f"```\n{responseText}```", color=0x00ff6e)
@@ -129,15 +178,7 @@ class todo(Cog_Extension):
             """, color=0x00ff6e)
         await ctx.send(embed=embed)
 
-    # search todolist
-    @commands.command()
-    async def todosearch(self, ctx, item: str = ""):
-        if item == "":
-            # TODO 詢問式的輸入
-            pass
-        else:
-            # TODO 單次輸入
-            pass
+
 
 async def setup(bot):
     await bot.add_cog(todo(bot))

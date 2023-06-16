@@ -25,7 +25,7 @@ class TimeManagement(Cog_Extension):
 
     # start task
     @commands.command()
-    async def start(self, ctx, item: str = "", hours: str = "" , minutes: str = "", seconds: str = ""):
+    async def starttask(self, ctx, item: str = "", hours: str = "" , minutes: str = "", seconds: str = ""):
         if item == "" or (hours == "" and minutes == "" and seconds == ""):
             # TODO 詢問式的輸入
             pass
@@ -41,7 +41,7 @@ class TimeManagement(Cog_Extension):
 
     # stop task
     @commands.command()
-    async def tasks(self, ctx):
+    async def tasklist(self, ctx):
         outputs = dict()
         for item in self.task:
             outputs[item] = f"{self.task[item][0].strftime('%Y/%m/%d %H:%M:%S')}, 剩餘時間: {(self.task[item][0] - datetime.now()).seconds} 秒"
