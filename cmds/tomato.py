@@ -12,10 +12,11 @@ class tomato(Cog_Extension):
     # Initialization
     def __init__(self, bot):
         self.bot = bot
-        self.timer = AsyncIOScheduler(timezone="Asia/Taipei")
-        self.timer.start()
-        self.timer_data = None  # datetime
+        self.timer = AsyncIOScheduler(timezone="Asia/Taipei") # 排程器
+        self.timer.start() 
+        self.timer_data = None  # 拿來存時間的
 
+    # 番茄鐘結束，進入休息時間
     async def notify(self):
         channel = self.bot.get_channel(channel_ID)
         embed = discord.Embed(
@@ -28,6 +29,7 @@ class tomato(Cog_Extension):
         self.timer.add_job(self.breakend, "date", run_date=self.timer_data)
         await channel.send(embed=embed)
 
+    # 休息結束，進入番茄鐘時間
     async def breakend(self):
         channel = self.bot.get_channel(channel_ID)
         embed = discord.Embed(
@@ -45,6 +47,7 @@ class tomato(Cog_Extension):
         view.add_item(button)
         self.timer_data = None
         await channel.send(embed=embed, view=view)
+        
     # start tomato
     async def starttomato_button_callback(self, interaction: discord.interactions):
         channel = self.bot.get_channel(channel_ID)

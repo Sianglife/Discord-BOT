@@ -104,7 +104,7 @@ class schedule(Cog_Extension):
                 label="時間", placeholder="時:分:秒",
                 default=f"{str(datetime.now().hour)}:{str(datetime.now().minute+5)}:{str(datetime.now().second)}" if datetime.now().minute<=54 else f"{str(datetime.now().hour+1)}:00:{str(datetime.now().second)}",
                 style=discord.TextStyle.short,
-                required=True
+                required=True,
             )
         )
         self.modal.on_submit = self.scheadd_modal_callback
@@ -112,14 +112,24 @@ class schedule(Cog_Extension):
         
     async def scheadd_modal_callback(self, interaction: discord.Interaction):
         self.modal.stop()
-        title = interaction.data["components"][0]["components"][0]["value"]
-        content = interaction.data["components"][1]["components"][0]["value"]
-        year = int(interaction.data["components"][2]["components"][0]["value"].split("/")[0])
-        month = int(interaction.data["components"][2]["components"][0]["value"].split("/")[1])
-        day = int(interaction.data["components"][2]["components"][0]["value"].split("/")[2])
-        hour = int(interaction.data["components"][3]["components"][0]["value"].split(":")[0])
-        minute = int(interaction.data["components"][3]["components"][0]["value"].split(":")[1])
-        second = int(interaction.data["components"][3]["components"][0]["value"].split(":")[2])
+        try:
+            title = interaction.data["components"][0]["components"][0]["value"]
+            content = interaction.data["components"][1]["components"][0]["value"]
+            year = int(interaction.data["components"][2]["components"][0]["value"].split("/")[0])
+            month = int(interaction.data["components"][2]["components"][0]["value"].split("/")[1])
+            day = int(interaction.data["components"][2]["components"][0]["value"].split("/")[2])
+            hour = int(interaction.data["components"][3]["components"][0]["value"].split(":")[0])
+            minute = int(interaction.data["components"][3]["components"][0]["value"].split(":")[1])
+            second = int(interaction.data["components"][3]["components"][0]["value"].split(":")[2])
+        except IndexError:
+            self.modal.stop()
+            embed = discord.Embed(
+                title="新增失敗",
+                description="輸入的日期或時間格式有誤",
+                color=0xff0000
+            )
+            await interaction.response.edit_message(embed=embed, view=None)
+            return
         time = datetime(year, month, day, hour, minute, second)
         embed = await self.add_item(title, time, content)
         try:
