@@ -114,7 +114,7 @@ class reminder(Cog_Extension):
         
         day = eval(interaction.data["components"][2]["components"][0]["value"])
         hours, minutes, second = list(map(int, (interaction.data["components"][3]["components"][0]["value"].split(":"))))
-        embed = await self.add_item(title, day, second, content)
+        embed = await self.add_item(title, day, hours, minutes, second, content)
         try:
             self.reminder.add_job(self.notify, "interval", days=day, hours=hours, minutes=minutes, seconds=second, args=[title], misfire_grace_time=60, id=title)
         except ConflictingIdError:
