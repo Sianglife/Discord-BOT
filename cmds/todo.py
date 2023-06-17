@@ -59,15 +59,15 @@ class todo(Cog_Extension):
         return embed
     
     async def todoadd_button_callback(self, interaction: discord.Interaction):
-        modal = discord.ui.Modal(title="新增代辦事項")
-        modal.add_item(
+        self.modal = discord.ui.Modal(title="新增代辦事項")
+        self.modal.add_item(
             discord.ui.TextInput(
                 label="事項名稱", placeholder="請輸入代辦事項",
                 style=discord.TextStyle.long
             ),
         )
-        modal.on_submit = self.todoadd_modal_callback
-        await interaction.response.send_modal(modal)
+        self.modal.on_submit = self.todoadd_modal_callback
+        await interaction.response.send_modal(self.modal)
         
     async def todoadd_modal_callback(self, interaction: discord.Interaction):
         self.modal.stop()

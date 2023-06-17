@@ -2,9 +2,8 @@ from discord.ext import commands
 from models.iolib import *
 from core import Cog_Extension
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from threading import Timer
 import discord
 
 channel_ID = int(json.load(open("channel_id.json", "r", encoding="utf8"))["time"]["id"])
@@ -13,49 +12,67 @@ class tomato(Cog_Extension):
     # Initialization
     def __init__(self, bot):
         self.bot = bot
-        self.timer_data = None
+        self.timer = AsyncIOScheduler(timezone="Asia/Taipei")
+        self.timer.start()
+        self.timer_data = None  # datetime
 
-    async def notify(self, item: str):
+    async def notify(self):
         channel = self.bot.get_channel(channel_ID)
         embed = discord.Embed(
-            title="行程提醒!",
-            description=f"**{item}**\n{self.schedule_data[item][1]}",
-            timestamp=self.schedule_data[item][0],
+            title="番茄鐘時間到!",
+            description=f"休息五分鐘!",
+            timestamp=datetime.now()
         )
-        self.schedule_data.pop(item)
+        self.timer_data = None
         await channel.send(embed=embed)
 
 
     # start tomato
     async def starttomato_modal_callback(self, interaction: discord.interactions):
-        #TODO
-        if interaction.data["values"][0] == "0":
-            modal = discord.ui.Modal(
-                title="自訂時間"
+        self.modal.stop()
+        n = int(interaction.data["components"][0]["components"][0]["value"])
+        # check if n is a number
+        if isinstance(n,int) and int(n) > 0:
+            self.modal.stop()
+            self.timer_data = datetime.now() + timedelta(minutes=int(n))
+            self.timer.add_job(self.notify, "date", run_date=self.timer_data)
+            await interaction.response.edit_message(content=f"已開始{int(n)}分鐘番茄鐘", view=None)
+        else:
+            view = discord.ui.View()
+            button = discord.ui.Button(
+                style=discord.ButtonStyle.primary,
+                label="重新輸入",
+                custom_id="starttomato_modal_retry",
             )
-            modal.add_item(
-                discord.ui.TextInput(
-                    label="時間(分鐘)",
-                    placeholder="分鐘"
-                )
-            )
-            modal.callback = self.starttomato_modal_callback
+            button.callback = self.starttomato_select_callback
+            view.add_item(button)
+            await interaction.response.edit_message(content="請輸入正整數", view=view)
 
     async def starttomato_select_callback(self, interaction: discord.interactions):
-        if interaction.data["values"][0] == "0":
-            modal = discord.ui.Modal(
+        # print(interaction.data)
+        if interaction.data["custom_id"] == "starttomato_modal_retry":
+            n = "0"
+        else:
+            n = interaction.data["values"][0]
+        if n == "0":
+            self.modal = discord.ui.Modal(
                 title="自訂時間"
             )
-            modal.add_item(
+            self.modal.add_item(
                 discord.ui.TextInput(
                     label="時間(分鐘)",
                     placeholder="分鐘"
                 )
             )
-            modal.callback = self.starttomato_modal_callback
+            self.modal.on_submit = self.starttomato_modal_callback
+            await interaction.response.send_modal(self.modal)
+        else:
+            self.timer_data = datetime.now() + timedelta(minutes=25*int(n))
+            self.timer.add_job(self.notify, "date", run_date=self.timer_data)
+            await interaction.response.edit_message(content=f"已開始{25*int(n)}分鐘番茄鐘", view=None)
 
     @commands.command()
-    async def starttomato(self, ctx, n: int=1):
+    async def starttomato(self, ctx):
         if self.timer_data != None:
             await ctx.send("已經有一個番茄鐘正在運行中")
             return
@@ -71,16 +88,28 @@ class tomato(Cog_Extension):
                 discord.SelectOption(label="150分鐘(2小時30分鐘)", value="4"),
                 discord.SelectOption(label="自訂時間", value="0")
             ],
+            custom_id="starttomato_select"
         )
         view.add_item(select)
+        select.callback = self.starttomato_select_callback
+        await ctx.send("請選擇番茄鐘時間", view=view)
         
-        self.timer_data = Timer(25*n, self.notify, args=["番茄鐘"])
+    # stop tomato
+    @commands.command()
+    async def stoptomato(self, ctx):
+        if self.timer_data != None:
+            self.timer.remove_all_jobs()
+            self.timer_data = None
+            await ctx.send("已停止番茄鐘")
+        else:
+            await ctx.send("番茄鐘沒有在運行中")
+        
 
     # view tomato status
     @commands.command()
     async def tomatostatus(self, ctx):
         if self.timer_data != None:
-            await ctx.send("番茄鐘正在運行中")
+            await ctx.send(f"番茄鐘正在運行中，剩下 {str(self.timer_data - datetime.now()).split('.')[0]}")
         else:
             await ctx.send("番茄鐘沒有在運行中")
 
