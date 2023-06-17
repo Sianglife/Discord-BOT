@@ -28,20 +28,22 @@ class Cmd(Cog_Extension):
     #玩法教學
     @commands.command()
     async def Wordlehelp(self, ctx):
-        await ctx.send("""
-> 歡迎來到Wordle遊戲
-> 當你開始一個Wordle遊戲，本機器人將會隨機選取一個長度為5之單字為答案。
-> 接著您可以輸入一個長度為5的單字，注意，必須為一個單字。本機器人會告訴你每個字母有沒有對。
-> 清況分為以下3種:
-    > 1.你輸入的單詞該位置字母與答案之字母相同且位置相同，機器人將在該位置輸出**粗體之大寫答案字母**。
-    > 2.你輸入的單詞該位置字母與答案之字母相同但位置不同，機器人將在您輸入之位置輸出小寫答案字母。
-    > 3.你輸入的單詞該位置字母與答案之字母無相同，機器人將在您輸入之位置輸出⨯。
-> 你可以跟伺服器裡的人一起猜，當然，你們的次數是共用的。
-> 
-> 以下為範例:
-    > 答案為apple，您輸入puppy，機器人將輸出:
-    > p⨯**P**p⨯
-""")
+        await ctx.send(
+            """
+            > 歡迎來到Wordle遊戲
+            > 當你開始一個Wordle遊戲，本機器人將會隨機選取一個長度為5之單字為答案。
+            > 接著您可以輸入一個長度為5的單字，注意，必須為一個單字。本機器人會告訴你每個字母有沒有對。
+            > 清況分為以下3種:
+                > 1.你輸入的單詞該位置字母與答案之字母相同且位置相同，機器人將在該位置輸出**粗體之大寫答案字母**。
+                > 2.你輸入的單詞該位置字母與答案之字母相同但位置不同，機器人將在您輸入之位置輸出小寫答案字母。
+                > 3.你輸入的單詞該位置字母與答案之字母無相同，機器人將在您輸入之位置輸出⨯。
+            > 你可以跟伺服器裡的人一起猜，當然，你們的次數是共用的。
+            > 
+            > 以下為範例:
+                > 答案為apple，您輸入puppy，機器人將輸出:
+                > p⨯**P**p⨯⨯
+            """
+        )
         
     #遊戲啟動
     @commands.command()
@@ -51,15 +53,22 @@ class Cmd(Cog_Extension):
             self.ch=6
             self.ans=self.wo[random.randrange(14855)] #隨機取
             await ctx.send(f'||{self.ans}||') #我英文太爛需要答案
-            await ctx.send("""
-```yaml
-Wordle遊戲開始!
-若需了解規則請輸入$Wordlehelp
-```""")
+            await ctx.send(
+                """
+                ```yaml
+                Wordle遊戲開始!
+                若需了解規則請輸入$Wordlehelp
+                ```
+                """
+            )
         else:
-            await ctx.send("""```
-已有遊戲進行中...
-```""")
+            await ctx.send(
+                """
+                ```
+                已有遊戲進行中...
+                ```
+                """
+            )
             
     #詢問
     @commands.command()
@@ -67,13 +76,13 @@ Wordle遊戲開始!
         self.w=0
         ask=''
         ret="""> 
-> """   #猜字提示
+            > """   #猜字提示
         over="""```yaml
-遊戲結束!
-答案是"""#未猜中文字
+            遊戲結束!
+            答案是"""#未猜中文字
         win="""```yaml
-恭喜猜對~
-答案是"""#猜中文字
+            恭喜猜對~
+            答案是"""#猜中文字
         if self.p==1:
             if len(ctx.message.content)==10: #檢測是否為五個字母
                 msg=ctx.message.content[5:].lower() #取出單字部分(去掉$Ask )
@@ -88,7 +97,8 @@ Wordle遊戲開始!
                             self.p=0
                             win+=self.ans#答案
                             win+="""
-你花了"""
+                                你花了
+                            """
                             win+=str(6-self.ch)#次數
                             win+="次猜中```"
                             await ctx.send(win)
@@ -110,17 +120,29 @@ Wordle遊戲開始!
                         over+="```"
                         await ctx.send(over)
                 else:
-                    await ctx.send("""```
-這不是個單字喲!
-```""")#非單字
+                    await ctx.send(
+                        """
+                        ```
+                        這不是個單字喲!
+                        ```
+                        """
+                    )#非單字
             else:
-                await ctx.send("""```
-請輸入長度為5的單詞~
-```""")#長度不為5
+                await ctx.send(
+                    """
+                    ```
+                    請輸入長度為5的單詞~
+                    ```
+                    """
+                )#長度不為5
         else:
-            await ctx.send("""```
-請先使用$Play指令開始遊戲:)
-```""")#未開啟遊戲
+            await ctx.send(
+                """
+                ```
+                請先使用$Play指令開始遊戲:)
+                ```
+                """
+            )#未開啟遊戲
 
 async def setup(bot):
     await bot.add_cog(Cmd(bot))
