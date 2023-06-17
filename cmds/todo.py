@@ -126,6 +126,7 @@ class todo(Cog_Extension):
             embed=discord.Embed(
                 title="清單沒有東西",
                 description="清單空無一物!確認好再問一次吧~",
+                color=0xff9500
             )
             await ctx.send(embed=embed)
             return
@@ -148,7 +149,9 @@ class todo(Cog_Extension):
                 清單空無一物!確認好再問一次吧~
                 **試試看:**
                 ```!todoadd  -->  新增代辦事項```
-                """, color=0xff9500)
+                """,
+                color=0xff9500
+            )
         else:
             embed=discord.Embed(title="待辨事項", description=f"```\n{responseText}```", color=0x00ff6e)
         await interaction.response.edit_message(embed=embed, view=None)

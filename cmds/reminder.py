@@ -63,11 +63,11 @@ class reminder(Cog_Extension):
         await ctx.send(view=view)
 
     ## Add item
-    async def add_item(self, item: str, day: int, second: int, content: str):
+    async def add_item(self, item: str, day: int, hours: int, minutes: int, second: int, content: str):
         self.reminder_data[item] = [day, second, content]
         embed = discord.Embed(
             title="已新增提醒", 
-            description=f"加入了```{item}```每**{day}天{second}秒**提醒",
+            description=f"加入了```{item}```每**{day}天 {hours}小時 {minutes}分鐘 {second}秒**提醒",
             color=discord.Color.green(),
         )
         return embed
@@ -98,8 +98,8 @@ class reminder(Cog_Extension):
         )
         self.modal.add_item(
             discord.ui.TextInput(
-                label="間隔秒數", placeholder="可用符號(如:60*5)，秒為單位",
-                default="60",
+                label="間隔時間", placeholder="小時:分鐘:秒鐘",
+                default="00:00:59",
                 style=discord.TextStyle.short,
                 required=True
             )
@@ -111,11 +111,12 @@ class reminder(Cog_Extension):
         self.modal.stop()
         title = interaction.data["components"][0]["components"][0]["value"]
         content = interaction.data["components"][1]["components"][0]["value"]
+        
         day = eval(interaction.data["components"][2]["components"][0]["value"])
-        second = eval(interaction.data["components"][3]["components"][0]["value"])
+        hours, minutes, second = list(map(int, (interaction.data["components"][3]["components"][0]["value"].split(":"))))
         embed = await self.add_item(title, day, second, content)
         try:
-            self.reminder.add_job(self.notify, "interval", days=day, seconds=second, args=[title], misfire_grace_time=60, id=title)
+            self.reminder.add_job(self.notify, "interval", days=day, hours=hours, minutes=minutes, seconds=second, args=[title], misfire_grace_time=60, id=title)
         except ConflictingIdError:
             embed = discord.Embed(
                 title="新增失敗",

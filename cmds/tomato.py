@@ -24,10 +24,48 @@ class tomato(Cog_Extension):
             timestamp=datetime.now()
         )
         self.timer_data = None
+        self.timer_data = datetime.now() + timedelta(minutes=5)
+        self.timer.add_job(self.breakend, "date", run_date=self.timer_data)
         await channel.send(embed=embed)
 
-
+    async def breakend(self):
+        channel = self.bot.get_channel(channel_ID)
+        embed = discord.Embed(
+            title="休息結束!",
+            description=f"回去做事囉!記得再加一個番茄鐘~",
+            timestamp=datetime.now()
+        )
+        view = discord.ui.View()
+        button = discord.ui.Button(
+            style=discord.ButtonStyle.primary,
+            label="開始番茄鐘",
+            custom_id="starttomato",
+        )
+        button.callback = self.starttomato_button_callback
+        view.add_item(button)
+        self.timer_data = None
+        await channel.send(embed=embed, view=view)
     # start tomato
+    async def starttomato_button_callback(self, interaction: discord.interactions):
+        channel = self.bot.get_channel(channel_ID)
+        view = discord.ui.View()
+        select = discord.ui.Select(
+            placeholder="選擇番茄鐘時間",
+            min_values=1,
+            max_values=1,
+            options=[
+                discord.SelectOption(label="25分鐘", value="1"),
+                discord.SelectOption(label="50分鐘", value="2"),
+                discord.SelectOption(label="100分鐘(1小時40分鐘)", value="3"),
+                discord.SelectOption(label="150分鐘(2小時30分鐘)", value="4"),
+                discord.SelectOption(label="自訂時間", value="0")
+            ],
+            custom_id="starttomato_select"
+        )
+        view.add_item(select)
+        select.callback = self.starttomato_select_callback
+        await channel.send("請選擇番茄鐘時間", view=view)
+
     async def starttomato_modal_callback(self, interaction: discord.interactions):
         self.modal.stop()
         n = int(interaction.data["components"][0]["components"][0]["value"])
