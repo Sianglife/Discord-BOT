@@ -5,7 +5,6 @@ import os
 from dotenv import load_dotenv
 
 # Set bots
-load_dotenv()
 bot = commands.Bot(command_prefix ="!", intents = discord.Intents.all(), type = 8) 
 
 @bot.event
@@ -30,5 +29,6 @@ async def unload(ctx, extension):
     await bot.unload_extension(f'cmds.{extension}')
     await ctx.send(f'Unloaded')
 
+load_dotenv()
 if  __name__ == "__main__":
     bot.run(os.getenv('DISCORD_BOT_TOKEN'))

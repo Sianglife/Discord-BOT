@@ -63,7 +63,7 @@ class todo(Cog_Extension):
         self.modal.add_item(
             discord.ui.TextInput(
                 label="事項名稱", placeholder="請輸入代辦事項",
-                style=discord.TextStyle.long
+                style=discord.TextStyle.short
             ),
         )
         self.modal.on_submit = self.todoadd_modal_callback

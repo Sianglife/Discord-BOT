@@ -19,9 +19,7 @@ class schedule(Cog_Extension):
         self.scheduler = AsyncIOScheduler(timezone="Asia/Taipei")
         self.scheduler.start()
 
-        self.schedule_data = {
-            "a" : [datetime.now(), "b"]
-        }
+        self.schedule_data = {}
         # item: [time, content]
 
     # notify on channel
@@ -104,7 +102,7 @@ class schedule(Cog_Extension):
         self.modal.add_item(
             discord.ui.TextInput(
                 label="時間", placeholder="時:分:秒",
-                default=f"{str(datetime.now().hour)}:{str(datetime.now().minute+5) if datetime.now().minute<=54 else 5}:{str(datetime.now().second)}",
+                default=f"{str(datetime.now().hour)}:{str(datetime.now().minute+5)}:{str(datetime.now().second)}" if datetime.now().minute<=54 else f"{str(datetime.now().hour+1)}:00:{str(datetime.now().second)}",
                 style=discord.TextStyle.short,
                 required=True
             )
@@ -164,17 +162,16 @@ class schedule(Cog_Extension):
             )
             await interaction.response.edit_message(embed=embed, view=None)
         else:
+            view = discord.ui.View()
             select = discord.ui.Select(
                 custom_id="schedulerm",
                 placeholder="請選擇",
                 options=[discord.SelectOption(label=i, value=i) for i in self.schedule_data.keys()]
             )
             select.callback = self.scherm_select_callback
-            view = discord.ui.View()
             view.add_item(select)
-            await interaction.response.edit_message(embed=embed, view=None)
-        await interaction.response.send_message("請選擇要刪除的行程", view=self.modal)
-
+            await interaction.response.edit_message(content="請選擇要刪除的行程", view=view)
+    
     async def scherm_select_callback(self, interaction: discord.Interaction):
         item = interaction.data["values"][0]
         try:
@@ -254,7 +251,7 @@ class schedule(Cog_Extension):
                 """, color=0xff9500)
         else:
             responseText = "\n".join(
-                [f"{key} ---> {datetime.strftime(item[0], '%Y/%m/%d %H:%M:%S')}" for key, item in self.schedule_data.items()]
+                [f"{key} ---> {datetime.strftime(item[0], '%Y/%m/%d %H:%M:%S')}" for key, item in sorted(self.schedule_data.items())]
             )
             embed=discord.Embed(
                 title="行程列表",

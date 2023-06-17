@@ -35,7 +35,6 @@ class reminder(Cog_Extension):
     @commands.command()
     async def reminder(self, ctx):
         view = discord.ui.View()
-
         button = discord.ui.Button(
             style=discord.ButtonStyle.primary,
             label="新增提醒",
@@ -64,7 +63,7 @@ class reminder(Cog_Extension):
 
     ## Add item
     async def add_item(self, item: str, day: int, hours: int, minutes: int, second: int, content: str):
-        self.reminder_data[item] = [day, second, content]
+        self.reminder_data[item] = [day, hours, minutes, second, content]
         embed = discord.Embed(
             title="已新增提醒", 
             description=f"加入了```{item}```每**{day}天 {hours}小時 {minutes}分鐘 {second}秒**提醒",
@@ -224,7 +223,7 @@ class reminder(Cog_Extension):
                 """, color=0xff9500)
         else:
             responseText = "\n".join(
-                [f"{key} ---> {datetime.strftime(item[0], '%Y/%m/%d %H:%M:%S')}" for key, item in self.reminder_data.items()]
+                [f"{key} ---> 每{item[0]}天{item[1]}小時{item[2]}分鐘{item[3]}秒提醒" for key, item in self.reminder_data.items()]
             )
             embed=discord.Embed(
                 title="提醒列表",
