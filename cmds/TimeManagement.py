@@ -25,19 +25,10 @@ class TimeManagement(Cog_Extension):
 
     # start task
     @commands.command()
-    async def starttask(self, ctx, item: str = "", hours: str = "" , minutes: str = "", seconds: str = ""):
-        if item == "" or (hours == "" and minutes == "" and seconds == ""):
-            # TODO 詢問式的輸入
-            pass
-        else:
-            # TODO 單次輸入
-            t = datetime.now() + timedelta(hours=int(hours), seconds=int(seconds))
-            self.task[item] = [t]
-            try: 
-                self.scheduler.add_job(self.notify, "date", run_date=t, args=[item, self.task, item, Channel_ID], misfire_grace_time=60, id=item)
-                await ctx.send(f"已新增行程 {item}")
-            except ConflictingIdError:
-                await ctx.send(f"已有行程 {item}")
+    async def starttask(self, ctx):
+        # if start
+        pass
+
 
     # stop task
     @commands.command()

@@ -19,9 +19,7 @@ class reminder(Cog_Extension):
         self.reminder = AsyncIOScheduler(timezone="Asia/Taipei")
         self.reminder.start()
         
-        self.reminder_data = {
-            "a" : ["b"]
-        }
+        self.reminder_data = {}
         # item: [day, second, content]
 
     # notify on channel
@@ -34,6 +32,36 @@ class reminder(Cog_Extension):
         await channel.send(embed=embed)
 
     ### schedule
+    @commands.command()
+    async def reminder(self, ctx):
+        view = discord.ui.View()
+
+        button = discord.ui.Button(
+            style=discord.ButtonStyle.primary,
+            label="新增提醒",
+            custom_id="remiadd",
+        )
+        button.callback = self.remiadd_button_callback
+        view.add_item(button)
+
+        button = discord.ui.Button(
+            style=discord.ButtonStyle.danger,
+            label="刪除提醒",
+            custom_id="remirm",
+        )
+        button.callback = self.remirm_button_callback
+        view.add_item(button)
+
+        button = discord.ui.Button(
+            style=discord.ButtonStyle.secondary,
+            label="查看所有提醒",
+            custom_id="remilist",
+        )
+        button.callback = self.remilist_button_callback
+        view.add_item(button)
+
+        await ctx.send(view=view)
+
     ## Add item
     async def add_item(self, item: str, day: int, second: int, content: str):
         self.reminder_data[item] = [day, second, content]
@@ -112,6 +140,31 @@ class reminder(Cog_Extension):
         await ctx.send(view=view)
 
     ## remove item
+    async def remirm_button_callback(self, interaction: discord.Interaction):
+        if self.reminder_data == {}:
+            embed=discord.Embed(
+                title="沒有東西可以刪除",
+                description=
+                """
+                清單空無一物!確認好再問一次吧~
+                **試試看:**
+                ```!remiadd  -->  新增提醒```
+                """,
+                color=0xff9500
+            )
+            await interaction.response.edit_message(embed=embed, view=None)
+        else:
+            # 詢問式輸入
+            select = discord.ui.Select(
+                custom_id="schedulerm",
+                placeholder="請選擇",
+                options=[discord.SelectOption(label=i, value=i) for i in self.reminder_data.keys()]
+            )
+            select.callback = self.remirm_select_callback
+            view = discord.ui.View()
+            view.add_item(select)
+            await interaction.response.edit_message(view=view)
+
     async def remirm_select_callback(self, interaction: discord.Interaction):
         item = interaction.data["values"][0]
         try:
@@ -160,6 +213,25 @@ class reminder(Cog_Extension):
             await ctx.send(view=view)
 
     # List 
+    async def remilist_button_callback(self, interaction: discord.Interaction):
+        if len(self.reminder_data) == 0:
+            embed=discord.Embed(title="清單沒有東西", description=
+                """
+                清單空無一物!確認好再問一次吧~
+                **試試看:**
+                ```!remiadd  -->  新增提醒```
+                """, color=0xff9500)
+        else:
+            responseText = "\n".join(
+                [f"{key} ---> {datetime.strftime(item[0], '%Y/%m/%d %H:%M:%S')}" for key, item in self.reminder_data.items()]
+            )
+            embed=discord.Embed(
+                title="提醒列表",
+                description=f"```\n{responseText}```",
+                color=0x00ff6e
+            )
+        await interaction.response.edit_message(embed=embed, view=None)
+
     @commands.command()
     async def remilist(self, ctx):
         if len(self.reminder_data) == 0:

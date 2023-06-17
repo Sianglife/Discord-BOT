@@ -64,6 +64,7 @@ class schedule(Cog_Extension):
         )
         button.callback = self.schelist_button_callback
         view.add_item(button)
+        
         await ctx.send(view=view)
         
     ## Add item
