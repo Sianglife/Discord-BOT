@@ -20,9 +20,9 @@ class reminder(Cog_Extension):
         self.reminder.start()
         
         self.reminder_data = {}
-        # item: [day, second, content]
+        # 標題: [day: int, hours: int, minutes: int, second: int, 詳細內容: int]
 
-    # notify on channel
+    # 提醒時間到自動呼叫，發送訊息
     async def notify(self, item: str):
         channel = self.bot.get_channel(channel_ID)
         embed = discord.Embed(
@@ -31,7 +31,7 @@ class reminder(Cog_Extension):
         )
         await channel.send(embed=embed)
 
-    ### schedule
+    # 所有功能按鈕一次列出
     @commands.command()
     async def reminder(self, ctx):
         view = discord.ui.View()
@@ -61,7 +61,7 @@ class reminder(Cog_Extension):
 
         await ctx.send(view=view)
 
-    ## Add item
+    # 新增提醒專用的函式
     async def add_item(self, item: str, day: int, hours: int, minutes: int, second: int, content: str):
         self.reminder_data[item] = [day, hours, minutes, second, content]
         embed = discord.Embed(
@@ -71,6 +71,7 @@ class reminder(Cog_Extension):
         )
         return embed
     
+    # callbacks of remiadd
     async def remiadd_button_callback(self, interaction: discord.Interaction):
         self.modal = discord.ui.Modal(title="新增提醒")
         self.modal.add_item(
@@ -126,6 +127,7 @@ class reminder(Cog_Extension):
             return
         await interaction.response.edit_message(embed=embed, view=None)
 
+    # 新增提醒的指令
     @commands.command()
     async def remiadd(self, ctx):
         # 詢問式輸入
@@ -139,7 +141,7 @@ class reminder(Cog_Extension):
         view.add_item(button)
         await ctx.send(view=view)
 
-    ## remove item
+    # callbacks of remirm
     async def remirm_button_callback(self, interaction: discord.Interaction):
         if self.reminder_data == {}:
             embed=discord.Embed(
@@ -185,7 +187,7 @@ class reminder(Cog_Extension):
         )
         await interaction.response.edit_message(embed=embed, view=None)
 
-    # remove item
+    # 刪除提醒的指令
     @commands.command()
     async def remirm(self, ctx):
         if self.reminder_data == {}:
@@ -212,7 +214,7 @@ class reminder(Cog_Extension):
             view.add_item(select)
             await ctx.send(view=view)
 
-    # List 
+    # callbacks of remilist
     async def remilist_button_callback(self, interaction: discord.Interaction):
         if len(self.reminder_data) == 0:
             embed=discord.Embed(title="清單沒有東西", description=
@@ -232,6 +234,7 @@ class reminder(Cog_Extension):
             )
         await interaction.response.edit_message(embed=embed, view=None)
 
+    # 列出提醒的指令
     @commands.command()
     async def remilist(self, ctx):
         if len(self.reminder_data) == 0:
@@ -252,7 +255,7 @@ class reminder(Cog_Extension):
             )
         await ctx.send(embed=embed)
 
-    # Clear todolist
+    # 清空提醒的指令
     @commands.command()
     async def remiclear(self, ctx):
         self.reminder_data.clear()

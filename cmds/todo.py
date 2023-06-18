@@ -10,13 +10,10 @@ with open("channel_id.json", "r", encoding="utf8") as f:
 
 class todo(Cog_Extension):
     # Initialization
-    def __init__(self, bot):
-        self.bot = bot
-        
+    def __init__(self, bot):        
         self.todo_data = []
 
-    ### todolist
-    ## all command
+    # 所有功能按鈕一次列出
     @commands.command()
     async def todo(self, ctx):
         view = discord.ui.View()
@@ -48,7 +45,7 @@ class todo(Cog_Extension):
         await ctx.send(view=view)
         
 
-    ## Add item
+    # 新增待辦事項專用的函式
     async def add_item(self, item):
         self.todo_data.append(item)
         embed = discord.Embed(
@@ -58,6 +55,7 @@ class todo(Cog_Extension):
         )
         return embed
     
+    # callbacks for todoadd
     async def todoadd_button_callback(self, interaction: discord.Interaction):
         self.modal = discord.ui.Modal(title="新增代辦事項")
         self.modal.add_item(
@@ -75,6 +73,7 @@ class todo(Cog_Extension):
         embed = await self.add_item(item)
         await interaction.response.edit_message(embed=embed, view=None)
 
+    # 新增待辦事項的指令
     @commands.command()
     async def todoadd(self, ctx, item: str = ""):
         if item == "":
@@ -93,7 +92,7 @@ class todo(Cog_Extension):
             embed = self.addItem(item)
             await ctx.send(embed=embed)
 
-    ## remove item
+    ## callbacks of todorm
     async def todorm_button_callback(self, interaction: discord.Interaction):
         if len(self.todo_data) == 0:
             embed=discord.Embed(
@@ -120,6 +119,7 @@ class todo(Cog_Extension):
             f"掰嗶~ ```{item}```", color=0xff9500)
         await interaction.response.edit_message(embed=embed, view=None)
 
+    # 刪除待辦事項的指令
     @commands.command()
     async def todorm(self, ctx):
         if len(self.todo_data) == 0:
@@ -140,7 +140,7 @@ class todo(Cog_Extension):
         view.add_item(select)
         await ctx.send(view=view)
 
-    # List todolist
+    # callbacks of todolist
     async def todolist_button_callback(self, interaction: discord.Interaction):
         responseText = "\n".join(self.todo_data)
         if len(self.todo_data) == 0:
@@ -156,6 +156,7 @@ class todo(Cog_Extension):
             embed=discord.Embed(title="待辨事項", description=f"```\n{responseText}```", color=0x00ff6e)
         await interaction.response.edit_message(embed=embed, view=None)
 
+    # 列出待辦事項的指令
     @commands.command()
     async def todolist(self, ctx):
         # TODO Embed
@@ -171,7 +172,7 @@ class todo(Cog_Extension):
             embed=discord.Embed(title="待辨事項", description=f"```\n{responseText}```", color=0x00ff6e)
         await ctx.send(embed=embed)
 
-    # Clear todolist
+    # 清空清單
     @commands.command()
     async def todoclear(self, ctx):
         self.todo_data.clear()

@@ -11,6 +11,7 @@ channel_ID = int(json.load(open("channel_id.json", "r", encoding="utf8"))["time"
 class tomato(Cog_Extension):
     # Initialization
     def __init__(self, bot):
+        # 將bot加入class的self裡，讓發送訊息時可以取得channel
         self.bot = bot
         self.timer = AsyncIOScheduler(timezone="Asia/Taipei") # 排程器
         self.timer.start() 
@@ -48,7 +49,7 @@ class tomato(Cog_Extension):
         self.timer_data = None
         await channel.send(embed=embed, view=view)
         
-    # start tomato
+    # 開一個新的番茄鐘
     async def starttomato_button_callback(self, interaction: discord.interactions):
         channel = self.bot.get_channel(channel_ID)
         view = discord.ui.View()
@@ -69,6 +70,7 @@ class tomato(Cog_Extension):
         select.callback = self.starttomato_select_callback
         await channel.send("請選擇番茄鐘時間", view=view)
 
+    # ui component callbacks
     async def starttomato_modal_callback(self, interaction: discord.interactions):
         self.modal.stop()
         n = int(interaction.data["components"][0]["components"][0]["value"])
