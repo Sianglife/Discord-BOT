@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 from discord.ext import commands
-import os
 import json
 from core import Cog_Extension
 

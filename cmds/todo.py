@@ -1,11 +1,8 @@
 from discord.ext import commands
 from models.iolib import *
 from core import Cog_Extension
-import json
 import discord
 
-with open("channel_id.json", "r", encoding="utf8") as f:
-    channel_ID = int(json.load(f)["todo"]["id"])
 
 
 class todo(Cog_Extension):
