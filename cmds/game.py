@@ -1,4 +1,6 @@
+import discord
 from discord.ext import commands
+import os
 from core import Cog_Extension
 from random import randint
 import time
@@ -24,7 +26,9 @@ class Game(Cog_Extension):
 
         ans=randint(1,101)
 
-        await ctx.send(f'最聰明的{ctx.author.mention}  \n終極密碼要開始羅!')
+        #終極密碼要開始+遷入訊息
+        embed=discord.Embed(title='終極密碼要開始羅!', description=f'最聰明的{ctx.author.mention} 快來發現答案!!', color=0xFF5733)
+        await ctx.send(embed=embed)
         
 
         start_time=time.time()
@@ -39,8 +43,9 @@ class Game(Cog_Extension):
             #時差(算出開始玩多久了)
             a=end_time-start_time
 
-            await ctx.send('從%d~%d猜一數字:'%(min,max))
-            await ctx.send('請在%d秒內想出來'%(30-a))
+            #嵌入式訊息!
+            embed=discord.Embed(title='遊戲進行中!', description='從%d~%d猜一數字:\n請在%d秒內想出來'%(min,max,(30-a)), color=0xFF5733)
+            await ctx.send(embed=embed)
 
             def check(message):
                 #檢查訊息
@@ -55,20 +60,22 @@ class Game(Cog_Extension):
 
             except ValueError:
                 #填的東西不是數字
-
-                await ctx.send('打數字拉 到底喔')
+                embed=discord.Embed(title='我生氣了喔', description='打數字拉 到底喔\n 給你休息2秒', color=0xFF5733)
+                await ctx.send(embed=embed)
                 await asyncio.sleep(2)
                 continue
 
             except asyncio.TimeoutError:
                 #時間不夠
-                await ctx.send('時間到! 笑死 想那麼久也太慢 我要去看英文了 呵')
+                embed=discord.Embed(title='太久了八', description='時間到! 笑死 想那麼久也太慢 我要去看英文了 呵', color=0xFF5733)
+                await ctx.send(embed=embed)
                 break
 
 
             if gus>=max or gus<=min:
                 #範圍外
-                await ctx.send(f'{ctx.author.mention} 不想玩就別玩 go away')
+                embed=discord.Embed(title='我生氣了喔', description=f'{ctx.author.mention} 不想玩就別玩 go away', color=0xFF5733)
+                await ctx.send(embed=embed)
                 await asyncio.sleep(2)
             
             elif gus>ans :
@@ -79,30 +86,41 @@ class Game(Cog_Extension):
 
             else:
                 #猜到
-                await ctx.send(f'{ctx.author.mention} 唉唷 是電神')
+                embed=discord.Embed(title='答對!!', description=f'{ctx.author.mention} 唉唷 是電神', color=0xFF5733)
+                await ctx.send(embed=embed)
+
                 return False
     
     @commands.command()
     async def set(self,ctx):
         #改範圍
-        await ctx.send(f'{ctx.channel.mention} 什麼?想作弊偷改範圍?!')
-        await ctx.send("好啦 輸入最大值")
-        
+        embed=discord.Embed(title='什麼?想作弊偷改範圍?!', description=f'{ctx.author.mention} 好啦 輸入最大值', color=0xFF5733)
+        await ctx.send(embed=embed)
+
         def check(message):
             return message.author == ctx.author and message.channel == ctx.channel
 
         try:
             msg = await self.bot.wait_for('message',check=check,timeout=10)
             self.max = int(msg.content)
-            await ctx.send("收到")
+
+            embed=discord.Embed(title='收到!', color=0xFF5733)
+            await ctx.send(embed=embed)
+
         except:
-                await ctx.send("你真的很無聊喔")
+            embed=discord.Embed(title=f'{ctx.author.mention}你真的很無聊喔',  color=0xFF5733)
+            await ctx.send(embed=embed)
     
     @commands.command()
     async def grade(self,ctx):
-        #猜的次數
-        await ctx.send("你猜了%d次"%(self.timess))
+        #猜的次數9
+        embed=discord.Embed(title='你厲害嗎?',description='你猜了%d次'%(self.timess),  color=0xFF5733)
+        await ctx.send(embed=embed)
+
         
+
+
+
 
 async def setup(bot):
     await bot.add_cog(Game(bot))
